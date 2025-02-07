@@ -1,4 +1,5 @@
 const userModel = require("../models/userModel");
+// const checkUserExisting = require("../auth/checkUserExisting");
 
 const createUser = async ({ firstname, lastname, email, password }, res) => {
   if (!firstname || !email || !password) {
@@ -11,6 +12,7 @@ const createUser = async ({ firstname, lastname, email, password }, res) => {
       .status(500)
       .json({ error: "User with this email already exists" });
   }
+
   console.log({ firstname, lastname, email, password });
 
   const user = await userModel.create({

@@ -1,36 +1,68 @@
 const UserModel = require("../models/userModel");
-const userService = require("../services/userServices");
 const { validationResult } = require("express-validator");
 
-const registerUser = async (req, res, next) => {
-  console.log("continued");
+const createUser = async ({ firstname, lastname, email, password }) => {
+  if (!firstname || !email || !password) {
+    throw new Error("All fields are required");
+  }
 
+  const existingUser = await UserModel.findOne({ email });
+  if (existingUser) {
+    throw new Error("User with this email already exists");
+  }
+
+  console.log({ firstname, lastname, email, password });
+
+  const user = await UserModel.create({
+    firstname,
+    lastname,
+    email,
+    password,
+  });
+
+  return user;
+};
+
+const registerUser = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log("Errors are there, correct it");
     return res.status(400).json({ errors: errors.array() });
   }
 
   const { firstname, lastname, email, password } = req.body;
-  //   console.log({ firstname, lastname, email, password });
 
-  const hashedPassword = await UserModel.hashPassword(password);
-  //   console.log(hashedPassword);
+  try {
+    const hashedPassword = await UserModel.hashPassword(password);
 
-  //   const { firstname, lastname } = fullname;
-  const user = await userService(
-    {
+    const user = await createUser({
       firstname,
       lastname,
       email,
       password: hashedPassword,
-    },
-    res
-  );
+    });
 
-  const token = await user.generateAuthToken();
-  //   res.status(200).send("hello");
-  res.status(201).json({ user, token });
+    const token = await user.generateAuthToken();
+    res.status(201).json({ user, token });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-module.exports = registerUser;
+const loginUser = async (req, res, next) => {
+  const { email, password } = req.body;
+  const user = await UserModel.findOne({ email }).select("+password");
+  if (!user) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
+
+  const isMatch = await user.comparePasswords(password);
+  if (!isMatch) {
+    return res.status(401).json({ message: "Invalid email or password" });
+  }
+
+  const token = await user.generateAuthToken();
+  console.log("User found here");
+  res.status(200).json({ token, user });
+};
+
+module.exports = { registerUser, loginUser };
