@@ -100,7 +100,7 @@ const CaptainSignUp = () => {
           />
 
           <button className="bg-[#111] rounded text-white text-xl font-medium  placeholder:text-base w-full px-3 py-1 outline-none mb-2">
-            Login
+            Create Captain Account
           </button>
           <p className="text-center">
             Already signed In?

@@ -1,6 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "./Header";
-import { useState } from "react";
+import axios from "axios";
+import { useContext, useState } from "react";
+import { UserDataContext } from "../assets/context/userContext";
 
 const UserSignUp = () => {
   const [firstname, setFirstname] = useState("");
@@ -8,13 +10,34 @@ const UserSignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [userData, setUserData] = useState({});
 
-  const submitHandler = (e) => {
+  const navigate = useNavigate();
+
+  const { setUser } = useContext(UserDataContext);
+
+  const submitHandler = async (e) => {
     e.preventDefault();
     // console.log(email, password);
-    setUserData({ email, password });
-    console.log(userData);
+    // setUserData({ email, password });
+    const newUser = {
+      firstname,
+      lastname,
+      email,
+      password,
+    };
+    console.log(newUser);
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/register`,
+      newUser
+    );
+
+    if (response.status === 201) {
+      const data = response.data;
+      setUser(data.user);
+      localStorage.setItem("token", data.token);
+      navigate("/home");
+    }
 
     setFirstname("");
     setLastname("");
@@ -99,7 +122,7 @@ const UserSignUp = () => {
           />
 
           <button className="bg-[#111] rounded text-white text-xl font-medium  placeholder:text-base w-full px-3 py-1 outline-none mb-2">
-            Login
+            Create Account
           </button>
           <p className="text-center">
             Already signed In?
