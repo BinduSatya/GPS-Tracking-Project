@@ -80,4 +80,4 @@ const logOutUser = async (req, res, next) => {
   await blackListTokenModel.create({ token });
   res.status(200).json({ message: "Logged out successfully" });
 };
-module.exports = { registerUser, loginUser, getUserProfile };
+module.exports = { registerUser, loginUser, getUserProfile, logOutUser };
